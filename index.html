@@ -533,6 +533,140 @@
   }
 
   /* DESKTOP overrides */
+  /* PLAYER */
+  #player {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(5,5,6,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.4s ease;
+  }
+
+  #player.hidden {
+    transform: translateY(100%);
+  }
+
+  .player-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .player-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--white);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .player-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 6px;
+    font-size: 16px;
+    transition: color 0.2s;
+    line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .player-btn:hover, .player-btn:active { color: var(--white); }
+
+  .player-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  .volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .volume-icon {
+    color: var(--muted);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  #volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 70px;
+    height: 2px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  #volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--white);
+    cursor: pointer;
+  }
+
+  #volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--white);
+    cursor: pointer;
+    border: none;
+  }
+
+  .player-close {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    background: none;
+    border: none;
+  }
+
+  .player-close:hover { color: rgba(255,255,255,0.6); }
+
   /* SPLASH */
   #splash {
     position: fixed;
@@ -793,6 +927,53 @@ function draw() {
 
 draw();
 
+// Audio player
+const audio = document.getElementById('bg-audio');
+const playBtn = document.getElementById('play-btn');
+const iconPlay = document.getElementById('icon-play');
+const iconPause = document.getElementById('icon-pause');
+const volumeSlider = document.getElementById('volume-slider');
+const playerClose = document.getElementById('player-close');
+const player = document.getElementById('player');
+
+audio.volume = 0.5;
+let started = false;
+
+function startAudio() {
+  if (!started) {
+    audio.play().catch(() => {});
+    started = true;
+    iconPlay.style.display = 'none';
+    iconPause.style.display = '';
+  }
+}
+
+// Autoplay on first interaction
+document.addEventListener('click', startAudio, {{ once: true }});
+document.addEventListener('touchstart', startAudio, {{ once: true }});
+
+playBtn.addEventListener('click', (e) => {{
+  e.stopPropagation();
+  if (audio.paused) {{
+    audio.play();
+    iconPlay.style.display = 'none';
+    iconPause.style.display = '';
+  }} else {{
+    audio.pause();
+    iconPlay.style.display = '';
+    iconPause.style.display = 'none';
+  }}
+}});
+
+volumeSlider.addEventListener('input', () => {{
+  audio.volume = volumeSlider.value;
+}});
+
+playerClose.addEventListener('click', () => {{
+  audio.pause();
+  player.classList.add('hidden');
+}});
+
 // Splash screen
 const splash = document.getElementById('splash');
 setTimeout(() => { splash.classList.add('hidden'); }, 4000);
@@ -824,5 +1005,34 @@ function updateTimer() {
 setInterval(updateTimer, 1000);
 updateTimer();
 </script>
+<!-- AUDIO -->
+<audio id="bg-audio" loop preload="auto">
+  <source src="Heronwater - Topic - Тайны.mp3" type="audio/mpeg">
+</audio>
+
+<!-- PLAYER -->
+<div id="player">
+  <div class="player-info">
+    <div class="player-title">сейчас играет</div>
+    <div class="player-name">Heronwater — Тайны</div>
+  </div>
+
+  <div class="player-controls">
+    <button class="player-btn" id="play-btn" title="Play/Pause">
+      <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+
+  <div class="volume-wrap">
+    <svg class="volume-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="color:rgba(255,255,255,0.35)">
+      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+    </svg>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+  </div>
+
+  <button class="player-close" id="player-close" title="Закрыть">✕</button>
+</div>
+
 </body>
 </html>
