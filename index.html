@@ -881,6 +881,8 @@
 </footer>
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+
 const canvas = document.getElementById('stars');
 const ctx = canvas.getContext('2d');
 
@@ -949,30 +951,30 @@ function startAudio() {
 }
 
 // Autoplay on first interaction
-document.addEventListener('click', startAudio, {{ once: true }});
-document.addEventListener('touchstart', startAudio, {{ once: true }});
+document.addEventListener('click', startAudio, { once: true });
+document.addEventListener('touchstart', startAudio, { once: true });
 
-playBtn.addEventListener('click', (e) => {{
+playBtn.addEventListener('click', function(e) {
   e.stopPropagation();
-  if (audio.paused) {{
+  if (audio.paused) {
     audio.play();
     iconPlay.style.display = 'none';
     iconPause.style.display = '';
-  }} else {{
+  } else {
     audio.pause();
     iconPlay.style.display = '';
     iconPause.style.display = 'none';
-  }}
-}});
+  }
+});
 
-volumeSlider.addEventListener('input', () => {{
+volumeSlider.addEventListener('input', function() {
   audio.volume = volumeSlider.value;
-}});
+});
 
-playerClose.addEventListener('click', () => {{
+playerClose.addEventListener('click', function() {
   audio.pause();
   player.classList.add('hidden');
-}});
+});
 
 // Splash screen
 const splash = document.getElementById('splash');
@@ -1004,6 +1006,8 @@ function updateTimer() {
 
 setInterval(updateTimer, 1000);
 updateTimer();
+
+});
 </script>
 <!-- AUDIO -->
 <audio id="bg-audio" loop preload="auto">
