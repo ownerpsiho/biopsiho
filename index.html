@@ -533,6 +533,41 @@
   }
 
   /* DESKTOP overrides */
+  /* SPLASH */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  #splash-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(22px, 5vw, 42px);
+    font-weight: 300;
+    color: var(--white);
+    text-align: center;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    opacity: 0;
+    animation: splashAnim 3.8s ease forwards;
+  }
+
+  @keyframes splashAnim {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    75%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  #splash.hidden {
+    display: none;
+  }
+
   @media (min-width: 768px) {
     nav { padding: 20px 40px; }
     .nav-links { gap: 32px; }
@@ -606,6 +641,11 @@
 </head>
 <body>
 
+<!-- SPLASH -->
+<div id="splash">
+  <div id="splash-text">привет, это мое био<br>читай и тд</div>
+</div>
+
 <canvas id="stars"></canvas>
 <div class="blob"></div>
 
@@ -666,6 +706,11 @@
       <div class="bio-card-label">Ранее</div>
       <div class="bio-card-value" style="font-size:15px; color: rgba(255,255,255,0.6);">Увлекался OSINT</div>
       <div class="osint-tag">открытые источники</div>
+    </div>
+
+    <div class="bio-card full" style="grid-column: 1 / -1; border-radius: 0 0 4px 4px;">
+      <div class="bio-card-label">Онлайн</div>
+      <div class="bio-card-value mono" id="online-timer" style="font-size:14px; color: rgba(255,255,255,0.6); letter-spacing: 0.08em;">00:00:00</div>
     </div>
   </div>
 </section>
@@ -747,6 +792,37 @@ function draw() {
 }
 
 draw();
+
+// Splash screen
+const splash = document.getElementById('splash');
+setTimeout(() => { splash.classList.add('hidden'); }, 4000);
+
+// Tab title change
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    document.title = 'не бросай меня..';
+  } else {
+    document.title = 'ты вернулся человек...';
+    setTimeout(() => { document.title = 'Psihokid'; }, 2500);
+  }
+});
+
+// Online timer
+const startTime = Date.now();
+const timerEl = document.getElementById('online-timer');
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function updateTimer() {
+  const diff = Math.floor((Date.now() - startTime) / 1000);
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  timerEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+setInterval(updateTimer, 1000);
+updateTimer();
 </script>
 </body>
 </html>
