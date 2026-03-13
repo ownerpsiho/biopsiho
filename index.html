@@ -167,6 +167,13 @@
     border: 1px solid var(--glass-border);
     filter: grayscale(15%) contrast(1.05);
     display: block;
+    animation: breathe 4s ease-in-out infinite;
+    transform-origin: center center;
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); filter: grayscale(15%) contrast(1.05) brightness(1); }
+    50%       { transform: scale(1.045); filter: grayscale(5%) contrast(1.08) brightness(1.07); }
   }
 
   .avatar-glow {
