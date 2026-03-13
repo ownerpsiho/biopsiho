@@ -1286,6 +1286,22 @@ if (secretCard) {
   secretCard.addEventListener('click', shatterClose);
 }
 
+// Triple tap on avatar (mobile)
+var avatarImg = document.querySelector('.avatar-img');
+var tapCount = 0;
+var tapTimer = null;
+if (avatarImg) {
+  avatarImg.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    tapCount++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(function() {
+      if (tapCount === 3) openSecret();
+      tapCount = 0;
+    }, 400);
+  });
+}
+
 });
 </script>
 
