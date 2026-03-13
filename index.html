@@ -533,6 +533,57 @@
   }
 
   /* DESKTOP overrides */
+  /* GLITCH / TYPED NAME */
+  #typed-name {
+    display: inline-block;
+    position: relative;
+    white-space: pre;
+  }
+
+  .glitch-char {
+    display: inline-block;
+    transition: color 0.05s;
+  }
+
+  @keyframes glitchFlicker {
+    0%, 100% { opacity: 1; transform: none; color: inherit; }
+    20% { opacity: 0.6; transform: skewX(-8deg) translateX(2px); color: rgba(255,255,255,0.3); }
+    40% { opacity: 1; transform: skewX(4deg) translateX(-1px); color: #fff; }
+    60% { opacity: 0.4; transform: skewX(-4deg); color: rgba(255,255,255,0.15); }
+    80% { opacity: 1; transform: none; }
+  }
+
+  .glitching {
+    animation: glitchFlicker 0.08s ease;
+  }
+
+  /* RIGHT CLICK TOAST */
+  #ctx-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 12px 24px;
+    border-radius: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9000;
+  }
+
+  #ctx-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   /* SPLASH */
   #splash {
     position: fixed;
@@ -646,6 +697,8 @@
   <div id="splash-text">привет, это мое био<br>читай и тд</div>
 </div>
 
+<div id="ctx-toast">зачем?</div>
+
 <canvas id="stars"></canvas>
 <div class="blob"></div>
 
@@ -668,7 +721,7 @@
 
   <div class="hero-left">
     <div class="hero-tag">кодер · аниме · pubg</div>
-    <h1 class="hero-name">Psiho<br><em>kid</em></h1>
+    <h1 class="hero-name"><span id="typed-name"></span></h1>
     <p class="hero-desc">
       Пишу код, делаю аниме-эдиты и иногда захожу в PUBG.
       Здесь всё что нужно — собрано в одном месте.
@@ -783,6 +836,86 @@ function draw() {
 }
 
 draw();
+
+// Right click block
+var ctxToast = document.getElementById('ctx-toast');
+var ctxTimer = null;
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+  ctxToast.classList.add('show');
+  clearTimeout(ctxTimer);
+  ctxTimer = setTimeout(function() { ctxToast.classList.remove('show'); }, 1800);
+});
+
+// Typing + glitch name effect
+var fullName = 'Psihokid';
+var glitchChars = 'АБВГДЕЖЗИКЛМНОПРСТabcdef#@!%&xX01';
+var typedEl = document.getElementById('typed-name');
+var typed = '';
+var typeIndex = 0;
+
+function getRandomChar() {
+  return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+}
+
+function renderName(final, ghost) {
+  var html = '';
+  for (var i = 0; i < final.length; i++) {
+    html += '<span class="glitch-char">' + final[i] + '</span>';
+  }
+  if (ghost) {
+    html += '<span class="glitch-char" style="color:rgba(255,255,255,0.4)">' + ghost + '</span>';
+  }
+  typedEl.innerHTML = html;
+}
+
+function typeNext() {
+  if (typeIndex >= fullName.length) {
+    startGlitchLoop();
+    return;
+  }
+
+  var scrambles = 0;
+  var maxScrambles = 5;
+
+  function scramble() {
+    if (scrambles < maxScrambles) {
+      renderName(typed, getRandomChar());
+      scrambles++;
+      setTimeout(scramble, 55);
+    } else {
+      typed += fullName[typeIndex];
+      typeIndex++;
+      renderName(typed, null);
+      setTimeout(typeNext, 120);
+    }
+  }
+  scramble();
+}
+
+function startGlitchLoop() {
+  renderName(fullName, null);
+  setInterval(function() {
+    var spans = typedEl.querySelectorAll('.glitch-char');
+    var count = Math.floor(Math.random() * 3) + 1;
+    for (var n = 0; n < count; n++) {
+      var idx = Math.floor(Math.random() * spans.length);
+      var original = fullName[idx];
+      var el = spans[idx];
+      el.textContent = getRandomChar();
+      el.classList.add('glitching');
+      (function(el, orig) {
+        setTimeout(function() {
+          el.textContent = orig;
+          el.classList.remove('glitching');
+        }, 120);
+      })(el, original);
+    }
+  }, 2200);
+}
+
+// Start typing after splash
+setTimeout(typeNext, 4200);
 
 // Splash screen
 const splash = document.getElementById('splash');
