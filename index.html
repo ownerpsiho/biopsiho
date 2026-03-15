@@ -813,6 +813,68 @@
     text-transform: uppercase;
   }
 
+  /* SLIDE ARROWS */
+  .slide-arrows {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .slide-arrow {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.6);
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .slide-arrow:hover, .slide-arrow:active {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.95);
+    border-color: rgba(255,255,255,0.35);
+  }
+
+  .slide-arrow.inactive { opacity: 0.2; pointer-events: none; }
+
+  .slide-counter {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.3);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .secret-slide { display: none; animation: fadeSlide 0.4s ease; }
+  .secret-slide.active { display: block; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .osint-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  #osint-canvas { width: 100%; height: 320px; display: block; }
+
   /* SECRET CARD PROFILE */
   .secret-avatar-wrap {
     width: 110px;
@@ -957,9 +1019,12 @@
 <div id="secret-page">
   <div class="secret-card" id="secret-card">
     <div class="secret-hint">[ доступ получен ]</div>
-    <div class="slide-nav" style="margin-bottom:20px;margin-top:0;">
-      <div class="slide-dot active" onclick="showSlide(0)"></div>
-      <div class="slide-dot" onclick="showSlide(1)"></div>
+
+    <!-- SLIDE ARROWS -->
+    <div class="slide-arrows">
+      <button class="slide-arrow inactive" id="slide-prev">←</button>
+      <span class="slide-counter" id="slide-counter">1 / 2</span>
+      <button class="slide-arrow" id="slide-next">→</button>
     </div>
 
     <!-- SLIDE 1: Profile -->
@@ -1258,13 +1323,27 @@ setInterval(updateTimer, 1000);
 updateTimer();
 
 // ── SLIDES ────────────────────────────────────────────────
+var currentSlide = 0;
+
 function showSlide(idx) {
   var slides = document.querySelectorAll('.secret-slide');
-  var dots = document.querySelectorAll('.slide-dot');
+  var total = slides.length;
+  idx = Math.max(0, Math.min(idx, total - 1));
+  currentSlide = idx;
   slides.forEach(function(s, i) { s.classList.toggle('active', i === idx); });
-  dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
-  if (idx === 1) drawOsint();
+  var counter = document.getElementById('slide-counter');
+  if (counter) counter.textContent = (idx + 1) + ' / ' + total;
+  var prev = document.getElementById('slide-prev');
+  var next = document.getElementById('slide-next');
+  if (prev) prev.classList.toggle('inactive', idx === 0);
+  if (next) next.classList.toggle('inactive', idx === total - 1);
+  if (idx === 1) setTimeout(drawOsint, 50);
 }
+
+var slidePrevBtn = document.getElementById('slide-prev');
+var slideNextBtn = document.getElementById('slide-next');
+if (slidePrevBtn) slidePrevBtn.addEventListener('click', function(e) { e.stopPropagation(); showSlide(currentSlide - 1); });
+if (slideNextBtn) slideNextBtn.addEventListener('click', function(e) { e.stopPropagation(); showSlide(currentSlide + 1); });
 
 // ── OSINT GRAPH ───────────────────────────────────────────
 function drawOsint() {
